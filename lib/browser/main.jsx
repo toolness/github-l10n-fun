@@ -1,11 +1,21 @@
 var React = require('react/addons');
 var ReactIntl = require('react-intl');
-var FormattedMessage = ReactIntl.FormattedMessage;
 var Router = require('react-router');
 var bs = require('react-bootstrap');
 
 var auth = require('./auth');
 var intlData = require('./intl-data');
+
+var LocalizedMsg = React.createClass({
+  mixins: [ReactIntl.IntlMixin],
+  render: function() {
+    var message = this.getIntlMessage(this.props.msgid);
+
+    return (
+      <ReactIntl.FormattedMessage message={message} {...this.props} />
+    );
+  }
+});
 
 var App = React.createClass({
   mixins: [Router.Navigation, Router.State, ReactIntl.IntlMixin],
@@ -21,15 +31,14 @@ var App = React.createClass({
     var username = auth.getUsername();
     var loginBtn = username
       ? <bs.NavItem onClick={this.handleLogoutClick}>
-          <FormattedMessage message={this.getIntlMessage('logout')}
-           username={username}/>
+          <LocalizedMsg msgid="logout" username={username}/>
         </bs.NavItem>
       : <bs.NavItem onClick={this.handleLoginClick}>
-          <FormattedMessage message={this.getIntlMessage('login')}/>
+          <LocalizedMsg msgid="login"/>
         </bs.NavItem>;
     var brandLink = (
       <Router.Link to="/">
-        <FormattedMessage message={this.getIntlMessage('app_name')}/>
+        <LocalizedMsg msgid="app_name"/>
       </Router.Link>
     );
 
@@ -49,11 +58,10 @@ var App = React.createClass({
 });
 
 var NotFound = React.createClass({
-  mixins: [ReactIntl.IntlMixin],
   render: function() {
     return (
       <p>
-        <FormattedMessage message={this.getIntlMessage('not_found')}/>
+        <LocalizedMsg msgid="not_found"/>
       </p>
     );
   }
