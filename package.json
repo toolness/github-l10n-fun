@@ -1,0 +1,17 @@
+{
+  "name": "github-l10n-fun",
+  "version": "0.0.1",
+  "description": "Attempting to do L10n through GitHub.",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.12.3",
+    "webpack": "^1.8.11",
+    "webpack-dev-middleware": "^1.0.11"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
