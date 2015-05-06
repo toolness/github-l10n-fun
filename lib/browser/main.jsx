@@ -1,11 +1,13 @@
-var querystring = require('querystring');
 var React = require('react/addons');
+var Router = require('react-router');
 var auth = require('./auth');
 var bs = require('react-bootstrap');
 
 var App = React.createClass({
+  mixins: [Router.Navigation, Router.State],
   handleLoginClick: function() {
-    auth.startLogin();
+    window.sessionStorage['pre_login_location'] = this.getPathname();
+    auth.startLogin(this.makeHref('oauth2_callback'));
   },
   handleLogoutClick: function() {
     auth.logout();
@@ -16,32 +18,53 @@ var App = React.createClass({
     var loginBtn = username
       ? <bs.NavItem onClick={this.handleLogoutClick}>Logout {username}</bs.NavItem>
       : <bs.NavItem onClick={this.handleLoginClick}>Login</bs.NavItem>;
+    var brandLink = <Router.Link to="/">GitHub L10n Fun</Router.Link>;
 
     return (
       <div>
-        <bs.Navbar staticTop brand="GitHub L10n Fun">
+        <bs.Navbar staticTop brand={brandLink}>
           <bs.Nav right>
             {loginBtn}
           </bs.Nav>
         </bs.Navbar>
         <div className="container">
-          <h1>Hello.</h1>
+          <Router.RouteHandler/>
         </div>
       </div>
     );
   }
 });
 
+var NotFound = React.createClass({
+  render: function() {
+    return <p>Not found.</p>;
+  }
+});
+
+var Home = React.createClass({
+  render: function() {
+    return <p>Sup.</p>;
+  }
+});
+
 var CompleteLogin = React.createClass({
+  mixins: [Router.State, Router.Navigation],
   getInitialState: function() {
     return {
       err: null
     };
   },
   componentDidMount: function() {
-    auth.completeLogin(this.props.code, this.props.state, function(err) {
+    var query = this.getQuery();
+    var pathname = window.sessionStorage['pre_login_location'] || '/';
+    delete window.sessionStorage['pre_login_location'];
+
+    if (auth.getUsername()) {
+      return this.transitionTo(pathname);
+    }
+    auth.completeLogin(query.code, query.state, function(err) {
       if (err) return  this.setState({err: err.message});
-      this.props.onSuccess();
+      this.transitionTo(pathname);
     }.bind(this));
   },
   render: function() {
@@ -55,19 +78,14 @@ var CompleteLogin = React.createClass({
   }
 });
 
-function main() {
-  var qs = querystring.parse(window.location.search.slice(1));
-  var content = <App/>;
-  var handleLoginSuccess = function() {
-    window.history.replaceState({}, "", '/');
-    main();
-  };
+var routes = (
+  <Router.Route handler={App} path="/">
+    <Router.DefaultRoute handler={Home}/>
+    <Router.Route name="oauth2_callback" path="callback" handler={CompleteLogin}/>
+    <Router.NotFoundRoute handler={NotFound}/>
+  </Router.Route>
+);
 
-  if (qs.code && qs.state) {
-    content = <CompleteLogin code={qs.code} state={qs.state} onSuccess={handleLoginSuccess}/>
-  }
-
-  React.render(content, document.getElementById('app'));
-}
-
-main();
+Router.run(routes, Router.HistoryLocation, function(Handler) {
+  React.render(<Handler/>, document.getElementById('app'));
+});
