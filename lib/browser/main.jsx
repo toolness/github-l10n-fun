@@ -1,10 +1,14 @@
 var React = require('react/addons');
+var ReactIntl = require('react-intl');
+var FormattedMessage = ReactIntl.FormattedMessage;
 var Router = require('react-router');
-var auth = require('./auth');
 var bs = require('react-bootstrap');
 
+var auth = require('./auth');
+var intlData = require('./intl-data');
+
 var App = React.createClass({
-  mixins: [Router.Navigation, Router.State],
+  mixins: [Router.Navigation, Router.State, ReactIntl.IntlMixin],
   handleLoginClick: function() {
     window.sessionStorage['pre_login_location'] = this.getPathname();
     auth.startLogin(this.makeHref('oauth2_callback'));
@@ -16,9 +20,18 @@ var App = React.createClass({
   render: function() {
     var username = auth.getUsername();
     var loginBtn = username
-      ? <bs.NavItem onClick={this.handleLogoutClick}>Logout {username}</bs.NavItem>
-      : <bs.NavItem onClick={this.handleLoginClick}>Login</bs.NavItem>;
-    var brandLink = <Router.Link to="/">GitHub L10n Fun</Router.Link>;
+      ? <bs.NavItem onClick={this.handleLogoutClick}>
+          <FormattedMessage message={this.getIntlMessage('logout')}
+           username={username}/>
+        </bs.NavItem>
+      : <bs.NavItem onClick={this.handleLoginClick}>
+          <FormattedMessage message={this.getIntlMessage('login')}/>
+        </bs.NavItem>;
+    var brandLink = (
+      <Router.Link to="/">
+        <FormattedMessage message={this.getIntlMessage('app_name')}/>
+      </Router.Link>
+    );
 
     return (
       <div>
@@ -36,14 +49,19 @@ var App = React.createClass({
 });
 
 var NotFound = React.createClass({
+  mixins: [ReactIntl.IntlMixin],
   render: function() {
-    return <p>Not found.</p>;
+    return (
+      <p>
+        <FormattedMessage message={this.getIntlMessage('not_found')}/>
+      </p>
+    );
   }
 });
 
 var Home = React.createClass({
   render: function() {
-    return <p>Sup.</p>;
+    return <p>TODO: Fill this in.</p>;
   }
 });
 
@@ -87,5 +105,8 @@ var routes = (
 );
 
 Router.run(routes, Router.HistoryLocation, function(Handler) {
-  React.render(<Handler/>, document.getElementById('app'));
+  React.render(
+    <Handler locales={intlData.locales} messages={intlData.messages} />,
+    document.getElementById('app')
+  );
 });
