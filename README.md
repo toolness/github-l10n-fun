@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/toolness/github-l10n-fun.svg?branch=master)](https://travis-ci.org/toolness/github-l10n-fun)
+
 This is a very experimental app that attempts to make
 it easy to localize web apps and do L10n workflow through GitHub.
 
