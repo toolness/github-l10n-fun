@@ -1,5 +1,7 @@
-This is an app that attempts to make it easy to localize web
-apps and do L10n workflow through GitHub.
+This is a very experimental app that attempts to make
+it easy to localize web apps and do L10n workflow through GitHub.
+
+It currently assumes use of the [ICU Message][] syntax.
 
 ## Quick Start
 
@@ -18,4 +20,5 @@ node app.js
 
 Then visit http://localhost:3000/ in your browser.
 
+[ICU Message]: http://formatjs.io/guides/message-syntax/
 [github_register]: https://github.com/settings/applications/new
