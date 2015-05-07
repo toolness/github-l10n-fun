@@ -4,7 +4,7 @@ var Router = require('react-router');
 var bs = require('react-bootstrap');
 
 var auth = require('./auth');
-var intlData = require('./intl-data');
+var messages = require('val!./messages');
 
 var LocalizedMsg = React.createClass({
   mixins: [ReactIntl.IntlMixin],
@@ -113,8 +113,9 @@ var routes = (
 );
 
 Router.run(routes, Router.HistoryLocation, function(Handler) {
+  var locale = 'en-US';
   React.render(
-    <Handler locales={intlData.locales} messages={intlData.messages} />,
+    <Handler locales={[locale]} messages={messages[locale]} />,
     document.getElementById('app')
   );
 });

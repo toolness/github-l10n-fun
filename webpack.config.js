@@ -19,7 +19,8 @@ module.exports = {
   devtool: PRODUCTION ? 'source-map' : 'eval',
   module: {
     loaders: [
-      { test: /\.jsx$/, loader: 'jsx-loader' }
+      { test: /\.jsx$/, loader: 'jsx-loader' },
+      { test: /\.json$/, loader: 'json-loader' }
     ],
   },
   output: {
