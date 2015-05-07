@@ -27,6 +27,9 @@ var App = React.createClass({
     auth.logout();
     this.forceUpdate();
   },
+  handleLocaleChange: function(e) {
+    this.props.onLocaleChange(e.target.value);
+  },
   render: function() {
     var username = auth.getUsername();
     var loginBtn = username
@@ -45,6 +48,13 @@ var App = React.createClass({
     return (
       <div>
         <bs.Navbar staticTop brand={brandLink}>
+          <div className="navbar-form navbar-right form-group">
+            <select className="form-control" defaultValue={this.props.locales} onChange={this.handleLocaleChange}>
+              {this.props.availableLocales.map(function(locale) {
+                return <option value={locale}>{locale}</option>;
+              })}
+            </select>
+          </div>
           <bs.Nav right>
             {loginBtn}
           </bs.Nav>
@@ -113,9 +123,18 @@ var routes = (
 );
 
 Router.run(routes, Router.HistoryLocation, function(Handler) {
-  var locale = 'en-US';
-  React.render(
-    <Handler locales={[locale]} messages={messages[locale]} />,
-    document.getElementById('app')
-  );
+  function handleLocaleChange(locale) {
+    var availableLocales = Object.keys(messages);
+
+    React.render(
+      <Handler
+       locales={locale}
+       messages={messages[locale]}
+       onLocaleChange={handleLocaleChange}
+       availableLocales={availableLocales} />,
+      document.getElementById('app')
+    );
+  }
+
+  handleLocaleChange('en-US');
 });
