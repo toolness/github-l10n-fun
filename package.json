@@ -16,6 +16,7 @@
     "react-router": "^0.13.3",
     "should": "^6.0.1",
     "superagent": "^1.2.0",
+    "underscore": "^1.8.3",
     "val-loader": "^0.5.0",
     "webpack": "^1.8.11",
     "webpack-dev-middleware": "^1.0.11"
