@@ -123,8 +123,12 @@ var routes = (
 );
 
 Router.run(routes, Router.HistoryLocation, function(Handler) {
+  var DEFAULT_LOCALE = 'en-US';
+  var initialLocale = window.sessionStorage['locale'];
+  var availableLocales = Object.keys(messages);
+
   function handleLocaleChange(locale) {
-    var availableLocales = Object.keys(messages);
+    window.sessionStorage['locale'] = locale;
 
     React.render(
       <Handler
@@ -136,5 +140,8 @@ Router.run(routes, Router.HistoryLocation, function(Handler) {
     );
   }
 
-  handleLocaleChange('en-US');
+  if (!(initialLocale && initialLocale in messages)) {
+    initialLocale = DEFAULT_LOCALE;
+  }
+  handleLocaleChange(initialLocale);
 });
