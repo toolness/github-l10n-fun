@@ -51,7 +51,7 @@ var App = React.createClass({
           <div className="navbar-form navbar-right form-group">
             <select className="form-control" defaultValue={this.props.locales} onChange={this.handleLocaleChange}>
               {this.props.availableLocales.map(function(locale) {
-                return <option value={locale}>{locale}</option>;
+                return <option key={locale} value={locale}>{locale}</option>;
               })}
             </select>
           </div>
