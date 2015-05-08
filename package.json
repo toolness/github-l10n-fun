@@ -10,6 +10,7 @@
     "json-loader": "^0.5.1",
     "jsx-loader": "^0.13.2",
     "mocha": "^2.2.4",
+    "parse-link-header": "^0.2.0",
     "react": "^0.13.2",
     "react-bootstrap": "^0.21.2",
     "react-intl": "^1.2.0",

@@ -7,6 +7,7 @@ var bs = require('react-bootstrap');
 var auth = require('./auth');
 var messages = require('val!./messages');
 var githubRequest = require('../github-request');
+var PagedEntityStream = require('../paged-entity-stream');
 
 var authGithubRequest = function(method, path) {
   return githubRequest(method, path, auth.getAccessToken());
@@ -151,6 +152,8 @@ var RepoHome = React.createClass({
   mixins: [Router.State],
   getInitialState: function() {
     return {
+      defaultBranch: '',
+      branches: [],
       locales: []
     };
   },
@@ -172,7 +175,33 @@ var RepoHome = React.createClass({
         this.setState({locales: locales});
       }.bind(this));
   },
+  fetchBranches: function() {
+    var params = this.getParams();
+    var branches = [];
+    var baseURL = '/repos/' + params.owner + '/' + params.repo;
+
+    // TODO: Handle error event.
+    var stream = new PagedEntityStream({
+      url: baseURL + '/branches',
+      request: authGithubRequest
+    }).on('data', function(branch) {
+      branches.push(branch);
+    }).on('end', function() {
+      authGithubRequest('GET', baseURL).end(function(err, res) {
+        if (err) {
+          // TODO: Actually do something user-friendly.
+          throw err;
+        }
+        // TODO: Test all kinds of edge cases here.
+        this.setState({
+          branches: branches,
+          defaultBranch: res.body.default_branch
+        });
+      }.bind(this));
+    }.bind(this));
+  },
   componentDidMount: function() {
+    this.fetchBranches();
     this.fetchLocales();
   },
   render: function() {
@@ -180,6 +209,15 @@ var RepoHome = React.createClass({
 
     return (
       <div>
+        <bs.Input type="select" label="Branch" className="input-sm" value={this.state.defaultBranch}>
+          {this.state.branches.map(function(branch) {
+            return (
+              <option key={branch.name} value={branch.name}>
+                {branch.name}
+              </option>
+            );
+          })}
+        </bs.Input>
         <ul>
           {this.state.locales.map(function(locale) {
             return (
