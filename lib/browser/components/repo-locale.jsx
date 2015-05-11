@@ -14,6 +14,7 @@ var RepoLocale = React.createClass({
     this.props.githubRequest('GET', '/repos/' + params.owner +
                              '/' + params.repo +
                              '/contents/locale/' + params.locale + '.json')
+      .query({ref: this.props.branch})
       .end(function(err, res) {
         if (err) {
           return this.props.handleGithubError(
