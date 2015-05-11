@@ -1,7 +1,7 @@
 var React = require('react/addons');
 var Router = require('react-router');
 
-var messages = require('val!./messages');
+var LocalizedHandler = require('./components/localized-handler');
 
 var routes = (
   <Router.Route handler={require('./components/app.jsx')} path="/">
@@ -20,25 +20,6 @@ var routes = (
 );
 
 Router.run(routes, Router.HistoryLocation, function(Handler) {
-  var DEFAULT_LOCALE = 'en-US';
-  var initialLocale = window.sessionStorage['locale'];
-  var availableLocales = Object.keys(messages);
-
-  function handleLocaleChange(locale) {
-    window.sessionStorage['locale'] = locale;
-
-    React.render(
-      <Handler
-       locales={locale}
-       messages={messages[locale]}
-       onLocaleChange={handleLocaleChange}
-       availableLocales={availableLocales} />,
-      document.getElementById('app')
-    );
-  }
-
-  if (!(initialLocale && initialLocale in messages)) {
-    initialLocale = DEFAULT_LOCALE;
-  }
-  handleLocaleChange(initialLocale);
+  React.render(<LocalizedHandler defaultLocale="en-US" handler={Handler}/>,
+               document.getElementById('app'));
 });
