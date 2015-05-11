@@ -24,6 +24,7 @@ var App = React.createClass({
   },
   handleLogoutClick: function() {
     auth.logout();
+    this.transitionTo('/');
     this.forceUpdate();
   },
   handleLocaleChange: function(e) {
