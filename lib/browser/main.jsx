@@ -13,6 +13,13 @@ var authGithubRequest = function(method, path) {
   return githubRequest(method, path, auth.getAccessToken());
 };
 
+var LoginMixin = {
+  login: function() {
+    window.sessionStorage['pre_login_location'] = this.getPath();
+    return auth.startLogin(this.makeHref('oauth2_callback'));
+  }
+};
+
 var LocalizedMsg = React.createClass({
   mixins: [ReactIntl.IntlMixin],
   render: function() {
@@ -25,10 +32,14 @@ var LocalizedMsg = React.createClass({
 });
 
 var App = React.createClass({
-  mixins: [Router.Navigation, Router.State, ReactIntl.IntlMixin],
+  mixins: [
+    Router.Navigation,
+    Router.State,
+    ReactIntl.IntlMixin,
+    LoginMixin
+  ],
   handleLoginClick: function() {
-    window.sessionStorage['pre_login_location'] = this.getPathname();
-    auth.startLogin(this.makeHref('oauth2_callback'));
+    this.login();
   },
   handleLogoutClick: function() {
     auth.logout();
@@ -135,7 +146,7 @@ var CompleteLogin = React.createClass({
 });
 
 var Repo = React.createClass({
-  mixins: [Router.State, Router.Navigation],
+  mixins: [Router.State, Router.Navigation, LoginMixin],
   getInitialState: function() {
     return {
       error: '',
@@ -144,6 +155,11 @@ var Repo = React.createClass({
     };
   },
   setError: function(msg, e) {
+    if (e.status == 403 && !auth.getUsername()) {
+      // We've probably hit GitHub's ridiculously low quota for
+      // anonymous requests, just make the user log in.
+      this.login();
+    }
     this.setState({error: msg});
     console.log(e);
   },
