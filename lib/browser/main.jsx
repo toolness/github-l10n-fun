@@ -20,6 +20,6 @@ var routes = (
 );
 
 Router.run(routes, Router.HistoryLocation, function(Handler) {
-  React.render(<LocalizedHandler defaultLocale="en-US" handler={Handler}/>,
+  React.render(<LocalizedHandler defaultLocale="en" handler={Handler}/>,
                document.getElementById('app'));
 });
