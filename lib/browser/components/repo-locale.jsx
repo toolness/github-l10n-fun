@@ -16,8 +16,10 @@ var RepoLocale = React.createClass({
                              '/contents/locale/' + params.locale + '.json')
       .end(function(err, res) {
         if (err) {
-          // TODO: Actually do something user-friendly.
-          throw err;
+          return this.props.handleGithubError(
+            <span>Unable to fetch messages for locale <code>{params.locale}</code>.</span>,
+            err
+          );
         }
         // TODO: Test all kinds of edge cases here.
         var messages = JSON.parse(

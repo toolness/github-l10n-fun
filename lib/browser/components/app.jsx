@@ -18,7 +18,6 @@ var App = React.createClass({
     ReactIntl.IntlMixin
   ],
   handleLoginClick: function() {
-    if (auth.getUsername()) return;
     window.sessionStorage['pre_login_location'] = this.getPath();
     return auth.startLogin(this.makeHref('oauth2_callback'));
   },
@@ -61,8 +60,8 @@ var App = React.createClass({
         </bs.Navbar>
         <div className="container">
           <Router.RouteHandler
-           githubRequest={authGithubRequest}
-           onLogin={this.handleLoginClick} />
+           username={username}
+           githubRequest={authGithubRequest} />
         </div>
       </div>
     );

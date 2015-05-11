@@ -9,17 +9,16 @@ var Repo = React.createClass({
   getInitialState: function() {
     return {
       error: '',
+      errorStatus: 0,
       defaultBranch: '',
       branches: []
     };
   },
   setError: function(msg, e) {
-    if (e.status == 403 && !auth.getUsername()) {
-      // We've probably hit GitHub's ridiculously low quota for
-      // anonymous requests, just make the user log in.
-      this.props.onLogin();
-    }
-    this.setState({error: msg});
+    this.setState({
+      error: msg,
+      errorStatus: e.status
+    });
     console.log(e);
   },
   fetchBranches: function() {
@@ -60,6 +59,17 @@ var Repo = React.createClass({
       })
     );
   },
+  renderError: function(error, status) {
+    return (
+      <div className="alert alert-danger">
+        <p>{this.state.error}</p>
+        <p>GitHub returned <a target="_blank" href={
+          "http://en.wikipedia.org/wiki/HTTP_" + status
+        }>HTTP {status}</a>.</p>
+        {!this.props.username ? <p>Logging in might help.</p> : null}
+      </div>
+    );
+  },
   render: function() {
     var params = this.getParams();
     var query = this.getQuery();
@@ -68,9 +78,7 @@ var Repo = React.createClass({
     var content;
 
     if (this.state.error) {
-      content = (
-        <div className="alert alert-danger">{this.state.error}</div>
-      );
+      content = this.renderError(this.state.error, this.state.errorStatus);
     } else if (isLoading) {
       content = "Loading repository metadata...";
     } else {
@@ -89,6 +97,7 @@ var Repo = React.createClass({
           </bs.Input>
           <Router.RouteHandler
            branch={branch}
+           handleGithubError={this.setError}
            githubRequest={this.props.githubRequest} />
         </div>
       );

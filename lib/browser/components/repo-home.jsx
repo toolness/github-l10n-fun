@@ -12,16 +12,19 @@ var RepoHome = React.createClass({
   fetchLocales: function() {
     var params = this.getParams();
     var branch = this.props.branch;
+    var localePath = '/locale';
 
     if (!branch) return this.setState({locales: []});
 
     this.props.githubRequest('GET', '/repos/' + params.owner +
-                             '/' + params.repo + '/contents/locale')
+                             '/' + params.repo + '/contents' + localePath)
       .query({ref: branch})
       .end(function(err, res) {
         if (err) {
-          // TODO: Actually do something user-friendly.
-          throw err;
+          return this.props.handleGithubError(
+            <span>Unable to list contents of <code>{localePath}</code>.</span>,
+            err
+          );
         }
         // TODO: Test all kinds of edge cases here.
         var locales = res.body.map(function(info) {
