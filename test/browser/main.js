@@ -1,3 +1,5 @@
+require('es5-shim');
+
 if (process.env.NODE_ENV === 'production') {
   describe("automated test suite", function() {
     it("does not run when NODE_ENV is 'production'", function() {
