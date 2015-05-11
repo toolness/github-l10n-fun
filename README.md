@@ -22,5 +22,48 @@ node app.js
 
 Then visit http://localhost:3000/ in your browser.
 
+## Tests
+
+Fully testing the code is accomplished by running `npm test`,
+which exercises a number of different aspects of the
+codebase described below.
+
+### Unit Tests
+
+Unit tests are spread across two different testing
+environments.
+
+Both environments use the [mocha][] test runner and [should][]
+for assertions.
+
+#### Node Tests
+
+These tests generally exercise the code of the server and are
+located in the `test` directory.
+
+Each test file should end with `.test.js` and will be automatically
+discovered by the test runner.
+
+Individually running *only* the node unit tests can be accomplished
+via `node_modules/.bin/mocha test/*.test.js`. For more options,
+see the documentation for [mocha (1)][].
+
+#### Browser Tests
+
+These tests exercise the code that runs in the user's browser. They're
+located in the `test/browser` directory.
+
+Each test file should end with `.test.js` or `.test.jsx` and will be
+automatically discovered by the test runner.
+
+Individually running *only* the browser unit tests can be accomplished
+by first running `npm start` and then visiting http://localhost:3000/test/
+in your browser.
+
+
+
 [ICU Message]: http://formatjs.io/guides/message-syntax/
 [github_register]: https://github.com/settings/applications/new
+[mocha]: http://mochajs.org/
+[mocha (1)]: http://mochajs.org/#usage
+[should]: https://www.npmjs.com/package/should
