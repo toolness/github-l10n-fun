@@ -135,45 +135,12 @@ var CompleteLogin = React.createClass({
 });
 
 var Repo = React.createClass({
-  mixins: [Router.State],
-  render: function() {
-    var params = this.getParams();
-
-    return (
-      <div>
-        <h1>{params.owner}/{params.repo}</h1>
-        <Router.RouteHandler/>
-      </div>
-    );
-  }
-});
-
-var RepoHome = React.createClass({
-  mixins: [Router.State],
+  mixins: [Router.State, Router.Navigation],
   getInitialState: function() {
     return {
       defaultBranch: '',
-      branches: [],
-      locales: []
+      branches: []
     };
-  },
-  fetchLocales: function() {
-    var params = this.getParams();
-
-    authGithubRequest('GET', '/repos/' + params.owner +
-                             '/' + params.repo + '/contents/locale')
-      .end(function(err, res) {
-        if (err) {
-          // TODO: Actually do something user-friendly.
-          throw err;
-        }
-        // TODO: Test all kinds of edge cases here.
-        var locales = res.body.map(function(info) {
-          var match = info.name.match(/^(.+)\.json$/);
-          return match[1];
-        });
-        this.setState({locales: locales});
-      }.bind(this));
   },
   fetchBranches: function() {
     var params = this.getParams();
@@ -195,21 +162,32 @@ var RepoHome = React.createClass({
         // TODO: Test all kinds of edge cases here.
         this.setState({
           branches: branches,
-          defaultBranch: res.body.default_branch
+          defaultBranch: res.body.default_branch,
+          branch: this.state.branch || res.body.default_branch
         });
       }.bind(this));
     }.bind(this));
   },
   componentDidMount: function() {
     this.fetchBranches();
-    this.fetchLocales();
+  },
+  handleChangeBranch: function(e) {
+    this.transitionTo(
+      this.getPathname(),
+      this.getParams(), _.extend(this.getQuery(), {
+        branch: e.target.value
+      })
+    );
   },
   render: function() {
     var params = this.getParams();
+    var query = this.getQuery();
+    var branch = query.branch || this.state.defaultBranch;
 
     return (
       <div>
-        <bs.Input type="select" label="Branch" className="input-sm" value={this.state.defaultBranch}>
+        <h1>{params.owner}/{params.repo}</h1>
+        <bs.Input type="select" label="Branch" className="input-sm" value={branch} onChange={this.handleChangeBranch}>
           {this.state.branches.map(function(branch) {
             return (
               <option key={branch.name} value={branch.name}>
@@ -218,6 +196,54 @@ var RepoHome = React.createClass({
             );
           })}
         </bs.Input>
+        <Router.RouteHandler branch={branch}/>
+      </div>
+    );
+  }
+});
+
+var RepoHome = React.createClass({
+  mixins: [Router.State],
+  getInitialState: function() {
+    return {
+      locales: []
+    };
+  },
+  fetchLocales: function() {
+    var params = this.getParams();
+    var branch = this.props.branch;
+
+    if (!branch) return this.setState({locales: []});
+
+    authGithubRequest('GET', '/repos/' + params.owner +
+                             '/' + params.repo + '/contents/locale')
+      .query({ref: branch})
+      .end(function(err, res) {
+        if (err) {
+          // TODO: Actually do something user-friendly.
+          throw err;
+        }
+        // TODO: Test all kinds of edge cases here.
+        var locales = res.body.map(function(info) {
+          var match = info.name.match(/^(.+)\.json$/);
+          return match[1];
+        });
+        this.setState({locales: locales});
+      }.bind(this));
+  },
+  componentDidMount: function() {
+    this.fetchLocales();
+  },
+  componentDidUpdate: function(prevProps, prevState) {
+    if (this.props.branch !== prevProps.branch) {
+      this.fetchLocales();
+    }
+  },
+  render: function() {
+    var params = this.getParams();
+
+    return (
+      <div>
         <ul>
           {this.state.locales.map(function(locale) {
             return (
