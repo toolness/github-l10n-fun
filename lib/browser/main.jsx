@@ -363,9 +363,9 @@ var routes = (
   <Router.Route handler={App} path="/">
     <Router.DefaultRoute handler={Home}/>
     <Router.Route name="oauth2_callback" path="callback" handler={CompleteLogin}/>
-    <Router.Route path="/:owner/:repo/" handler={Repo}>
+    <Router.Route path="/:owner/:repo" handler={Repo}>
       <Router.DefaultRoute name="repo_home" handler={RepoHome}/>
-      <Router.Route name="repo_locale" path=":locale/" handler={RepoLocale}/>
+      <Router.Route name="repo_locale" path=":locale" handler={RepoLocale}/>
     </Router.Route>
     <Router.NotFoundRoute handler={NotFound}/>
   </Router.Route>
