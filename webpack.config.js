@@ -15,7 +15,10 @@ function importEnvVars(keys) {
 }
 
 module.exports = {
-  entry: './lib/browser/main.jsx',
+  entry: {
+    'main': './lib/browser/main.jsx',
+    'test': './test/browser/main.js'
+  },
   devtool: PRODUCTION ? 'source-map' : 'eval',
   module: {
     loaders: [

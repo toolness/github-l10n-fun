@@ -51,7 +51,7 @@ if (!PRODUCTION) {
 }
 
 app.use(function(req, res, next) {
-  if (!INDEX_HTML_RE.test(req.path))
+  if (!INDEX_HTML_RE.test(req.path) || req.path === '/test/')
     return next('route');
   if (!indexHTML || !PRODUCTION)
     indexHTML = fs.readFileSync(STATIC_DIR + '/index.html');
@@ -59,6 +59,7 @@ app.use(function(req, res, next) {
 });
 
 app.use(express.static(STATIC_DIR));
+app.use('/test/mocha', express.static(__dirname + '/node_modules/mocha'));
 
 if (PRODUCTION) {
   console.log("Running webpack compiler...");
