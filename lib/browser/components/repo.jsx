@@ -1,23 +1,57 @@
+var _ = require('underscore');
 var React = require('react/addons');
 var Router = require('react-router');
 var bs = require('react-bootstrap');
 
 var PagedEntityStream = require('../../paged-entity-stream');
 
+var GithubErrorAlert = React.createClass({
+  render: function() {
+    var status = this.props.error.status;
+
+    return (
+      <div className="alert alert-danger">
+        <p>{this.props.error.message}</p>
+        <p>GitHub returned <a target="_blank" href={
+          "http://en.wikipedia.org/wiki/HTTP_" + status
+        }>HTTP {status}</a>.</p>
+        {!this.props.isLoggedIn ? <p>Logging in might help.</p> : null}
+      </div>
+    );
+  },
+});
+
+var BranchSelector = React.createClass({
+  render: function() {
+    if (this.props.branches.length == 0) return <div></div>;
+
+    return (
+      <bs.Input type="select" label="Branch" className="input-sm"
+       value={this.props.branch} onChange={this.props.onChangeBranch}>
+        {this.props.branches.map(function(branch) {
+          return (
+            <option key={branch} value={branch}>
+              {branch}
+            </option>
+          );
+        })}
+      </bs.Input>
+    );
+  }
+});
+
 var Repo = React.createClass({
   mixins: [Router.State, Router.Navigation],
   getInitialState: function() {
     return {
-      error: '',
-      errorStatus: 0,
+      error: null,
       defaultBranch: '',
       branches: []
     };
   },
   setError: function(msg, e) {
     this.setState({
-      error: msg,
-      errorStatus: e.status
+      error: {message: msg, status: e.status},
     });
     console.log(e);
   },
@@ -32,7 +66,7 @@ var Repo = React.createClass({
       url: baseURL + '/branches',
       request: githubRequest
     }).on('data', function(branch) {
-      branches.push(branch);
+      branches.push(branch.name);
     }).on('error', function(e) {
       this.setError('Unable to fetch branch list.', e);
     }.bind(this)).on('end', function() {
@@ -59,17 +93,6 @@ var Repo = React.createClass({
       })
     );
   },
-  renderError: function(error, status) {
-    return (
-      <div className="alert alert-danger">
-        <p>{this.state.error}</p>
-        <p>GitHub returned <a target="_blank" href={
-          "http://en.wikipedia.org/wiki/HTTP_" + status
-        }>HTTP {status}</a>.</p>
-        {!this.props.username ? <p>Logging in might help.</p> : null}
-      </div>
-    );
-  },
   render: function() {
     var params = this.getParams();
     var query = this.getQuery();
@@ -77,35 +100,33 @@ var Repo = React.createClass({
     var isLoading = (this.state.defaultBranch === '');
     var content;
 
+    if (this.state.branches.indexOf(branch) == -1)
+      branch = this.state.defaultBranch;
+
     if (this.state.error) {
-      content = this.renderError(this.state.error, this.state.errorStatus);
+      content = (
+        <GithubErrorAlert
+         isLoggedIn={!!this.props.username}
+         error={this.state.error} />
+      );
     } else if (isLoading) {
       content = "Loading repository metadata...";
     } else {
-      if (this.state.branches.indexOf(branch) == -1)
-        branch = this.state.defaultBranch;
       content = (
-        <div>
-          <bs.Input type="select" label="Branch" className="input-sm" value={branch} onChange={this.handleChangeBranch}>
-            {this.state.branches.map(function(branch) {
-              return (
-                <option key={branch.name} value={branch.name}>
-                  {branch.name}
-                </option>
-              );
-            })}
-          </bs.Input>
-          <Router.RouteHandler
-           branch={branch}
-           handleGithubError={this.setError}
-           githubRequest={this.props.githubRequest} />
-        </div>
+        <Router.RouteHandler
+         branch={branch}
+         handleGithubError={this.setError}
+         githubRequest={this.props.githubRequest} />
       );
     }
 
     return (
       <div>
         <h1>{params.owner}/{params.repo}</h1>
+        <BranchSelector
+         branch={branch}
+         branches={this.state.branches}
+         onChangeBranch={this.handleChangeBranch} />
         {content}
       </div>
     );
