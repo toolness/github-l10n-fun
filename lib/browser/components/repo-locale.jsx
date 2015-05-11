@@ -31,6 +31,11 @@ var RepoLocale = React.createClass({
   componentDidMount: function() {
     this.fetchLocale();
   },
+  componentDidUpdate: function(prevProps, prevState) {
+    if (this.props.branch !== prevProps.branch) {
+      this.fetchLocale();
+    }
+  },
   render: function() {
     var params = this.getParams();
     var messages = this.state.messages;
