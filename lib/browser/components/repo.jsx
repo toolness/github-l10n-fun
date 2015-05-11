@@ -86,6 +86,7 @@ var Repo = React.createClass({
     this.fetchBranches();
   },
   handleChangeBranch: function(e) {
+    this.setState({error: null});
     this.transitionTo(
       this.getPathname(),
       this.getParams(), _.extend(this.getQuery(), {
