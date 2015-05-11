@@ -138,9 +138,14 @@ var Repo = React.createClass({
   mixins: [Router.State, Router.Navigation],
   getInitialState: function() {
     return {
+      error: '',
       defaultBranch: '',
       branches: []
     };
+  },
+  setError: function(msg, e) {
+    this.setState({error: msg});
+    console.log(e);
   },
   fetchBranches: function() {
     var params = this.getParams();
@@ -153,12 +158,12 @@ var Repo = React.createClass({
       request: authGithubRequest
     }).on('data', function(branch) {
       branches.push(branch);
-    }).on('end', function() {
+    }).on('error', function(e) {
+      this.setError('Unable to fetch branch list.', e);
+    }.bind(this)).on('end', function() {
       authGithubRequest('GET', baseURL).end(function(err, res) {
-        if (err) {
-          // TODO: Actually do something user-friendly.
-          throw err;
-        }
+        if (err)
+          return this.setError('Unable to fetch repository metadata.', err);
         // TODO: Test all kinds of edge cases here.
         this.setState({
           branches: branches,
@@ -183,20 +188,38 @@ var Repo = React.createClass({
     var params = this.getParams();
     var query = this.getQuery();
     var branch = query.branch || this.state.defaultBranch;
+    var isLoading = (this.state.defaultBranch === '');
+    var content;
+
+    if (this.state.error) {
+      content = (
+        <div className="alert alert-danger">{this.state.error}</div>
+      );
+    } else if (isLoading) {
+      content = "Loading repository metadata...";
+    } else {
+      if (this.state.branches.indexOf(branch) == -1)
+        branch = this.state.defaultBranch;
+      content = (
+        <div>
+          <bs.Input type="select" label="Branch" className="input-sm" value={branch} onChange={this.handleChangeBranch}>
+            {this.state.branches.map(function(branch) {
+              return (
+                <option key={branch.name} value={branch.name}>
+                  {branch.name}
+                </option>
+              );
+            })}
+          </bs.Input>
+          <Router.RouteHandler branch={branch}/>
+        </div>
+      );
+    }
 
     return (
       <div>
         <h1>{params.owner}/{params.repo}</h1>
-        <bs.Input type="select" label="Branch" className="input-sm" value={branch} onChange={this.handleChangeBranch}>
-          {this.state.branches.map(function(branch) {
-            return (
-              <option key={branch.name} value={branch.name}>
-                {branch.name}
-              </option>
-            );
-          })}
-        </bs.Input>
-        <Router.RouteHandler branch={branch}/>
+        {content}
       </div>
     );
   }
