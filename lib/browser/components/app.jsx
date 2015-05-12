@@ -19,10 +19,18 @@ var App = React.createClass({
   handleLogoutClick: function() {
     auth.logout();
     this.transitionTo('/');
-    this.forceUpdate();
   },
   handleLocaleChange: function(e) {
     this.props.onLocaleChange(e.target.value);
+  },
+  handleAuthChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    auth.on('change', this.handleAuthChange);
+  },
+  componentWillUnmount: function() {
+    auth.removeListener('change', this.handleAuthChange);
   },
   render: function() {
     var username = auth.getUsername();
