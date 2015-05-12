@@ -56,30 +56,34 @@ var RepoHome = React.createClass({
     });
 
     return (
-      <div>
-        <h2>Existing Localizations</h2>
-        <ul>
-          {this.state.locales.map(function(locale) {
-            return (
-              <li key={locale}>
-                <Router.Link to="repo_locale" params={_.extend({
-                  locale: locale
-                }, params)} query={this.getQuery()}>{locale}</Router.Link>
-              </li>
-            );
-          }, this)}
-        </ul>
-        <h2>Start A New Localization</h2>
-        <form onSubmit={this.handleSubmit}>
-          <bs.Input type="select" label="Locale" className="input-sm" name="locale">
-            {allLocales.filter(function(locale) {
-              return !(locale in localeMap);
-            }).map(function(locale) {
-              return <option key={locale} value={locale}>{locale}</option>
-            })}
-          </bs.Input>
-          <bs.Button type="submit">Go</bs.Button>
-        </form>
+      <div className="row">
+        <div className="col-sm-6">
+          <h2>Existing Localizations</h2>
+          <ul>
+            {this.state.locales.map(function(locale) {
+              return (
+                <li key={locale}>
+                  <Router.Link to="repo_locale" params={_.extend({
+                    locale: locale
+                  }, params)} query={this.getQuery()}>{locale}</Router.Link>
+                </li>
+              );
+            }, this)}
+          </ul>
+        </div>
+        <div className="col-sm-6">
+          <h2>Start A New Localization</h2>
+          <form onSubmit={this.handleSubmit}>
+            <bs.Input type="select" label="Locale" className="input-sm" name="locale">
+              {allLocales.filter(function(locale) {
+                return !(locale in localeMap);
+              }).map(function(locale) {
+                return <option key={locale} value={locale}>{locale}</option>
+              })}
+            </bs.Input>
+            <bs.Button type="submit">Go</bs.Button>
+          </form>
+        </div>
       </div>
     );
   }
