@@ -2,6 +2,8 @@ var _ = require('underscore');
 var React = require('react/addons');
 var Router = require('react-router');
 
+var Github = require('../github');
+
 var RepoHome = React.createClass({
   mixins: [Router.State],
   getInitialState: function() {
@@ -12,27 +14,22 @@ var RepoHome = React.createClass({
   fetchLocales: function() {
     var params = this.getParams();
     var branch = this.props.branch;
-    var localePath = '/locale';
 
     if (!branch) return this.setState({locales: []});
 
-    this.props.githubRequest('GET', '/repos/' + params.owner +
-                             '/' + params.repo + '/contents' + localePath)
-      .query({ref: branch})
-      .end(function(err, res) {
-        if (err) {
-          return this.props.handleGithubError(
-            <span>Unable to list contents of <code>{localePath}</code>.</span>,
-            err
-          );
-        }
-        // TODO: Test all kinds of edge cases here.
-        var locales = res.body.map(function(info) {
-          var match = info.name.match(/^(.+)\.json$/);
-          return match[1];
-        });
-        this.setState({locales: locales});
-      }.bind(this));
+    Github.fetchLocaleList({
+      owner: params.owner,
+      repo: params.repo,
+      branch: branch
+    }, function(err, locales) {
+      if (!this.isMounted()) return;
+      if (err)
+        return this.props.handleGithubError(
+          <span>Unable to list contents of <code>{Github.LOCALE_PATH}</code>.</span>,
+          err
+        );
+      this.setState({locales: locales});
+    }.bind(this));
   },
   componentDidMount: function() {
     this.fetchLocales();

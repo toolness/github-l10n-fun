@@ -3,7 +3,7 @@ var React = require('react/addons');
 var Router = require('react-router');
 var bs = require('react-bootstrap');
 
-var PagedEntityStream = require('../../paged-entity-stream');
+var Github = require('../github');
 
 var GithubErrorAlert = React.createClass({
   render: function() {
@@ -57,29 +57,19 @@ var Repo = React.createClass({
   },
   fetchBranches: function() {
     var params = this.getParams();
-    var branches = [];
-    var baseURL = '/repos/' + params.owner + '/' + params.repo;
-    var githubRequest = this.props.githubRequest;
 
-    // TODO: Handle error event.
-    var stream = new PagedEntityStream({
-      url: baseURL + '/branches',
-      request: githubRequest
-    }).on('data', function(branch) {
-      branches.push(branch.name);
-    }).on('error', function(e) {
-      this.setError('Unable to fetch branch list.', e);
-    }.bind(this)).on('end', function() {
-      githubRequest('GET', baseURL).end(function(err, res) {
-        if (err)
-          return this.setError('Unable to fetch repository metadata.', err);
-        // TODO: Test all kinds of edge cases here.
-        this.setState({
-          branches: branches,
-          defaultBranch: res.body.default_branch,
-          branch: this.state.branch || res.body.default_branch
-        });
-      }.bind(this));
+    Github.fetchRepoInfo({
+      owner: params.owner,
+      repo: params.repo
+    }, function(err, info) {
+      if (!this.isMounted()) return;
+      if (err)
+        return this.setError('Unable to fetch repository metadata.', err);
+      this.setState({
+        branches: info.branches,
+        defaultBranch: info.defaultBranch,
+        branch: this.state.branch || info.defaultBranch
+      });
     }.bind(this));
   },
   componentDidMount: function() {
@@ -116,8 +106,7 @@ var Repo = React.createClass({
       content = (
         <Router.RouteHandler
          branch={branch}
-         handleGithubError={this.setError}
-         githubRequest={this.props.githubRequest} />
+         handleGithubError={this.setError} />
       );
     }
 

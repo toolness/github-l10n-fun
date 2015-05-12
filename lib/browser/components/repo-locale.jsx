@@ -1,6 +1,8 @@
 var React = require('react/addons');
 var Router = require('react-router');
 
+var Github = require('../github');
+
 var RepoLocale = React.createClass({
   mixins: [Router.State],
   getInitialState: function() {
@@ -11,23 +13,20 @@ var RepoLocale = React.createClass({
   fetchLocale: function() {
     var params = this.getParams();
 
-    this.props.githubRequest('GET', '/repos/' + params.owner +
-                             '/' + params.repo +
-                             '/contents/locale/' + params.locale + '.json')
-      .query({ref: this.props.branch})
-      .end(function(err, res) {
-        if (err) {
-          return this.props.handleGithubError(
-            <span>Unable to fetch messages for locale <code>{params.locale}</code>.</span>,
-            err
-          );
-        }
-        // TODO: Test all kinds of edge cases here.
-        var messages = JSON.parse(
-          new Buffer(res.body.content, 'base64').toString('utf-8')
+    Github.fetchLocaleMessages({
+      owner: params.owner,
+      repo: params.repo,
+      branch: this.props.branch,
+      locale: params.locale
+    }, function(err, messages) {
+      if (!this.isMounted()) return;
+      if (err)
+        return this.props.handleGithubError(
+          <span>Unable to fetch/parse messages for locale <code>{params.locale}</code>.</span>,
+          err
         );
-        this.setState({messages: messages});
-      }.bind(this));
+      this.setState({messages: messages});
+    }.bind(this));
   },
   componentDidMount: function() {
     this.fetchLocale();

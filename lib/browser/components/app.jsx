@@ -5,11 +5,6 @@ var bs = require('react-bootstrap');
 
 var LocalizedMsg = require('./localized-msg.jsx');
 var auth = require('../auth');
-var githubRequest = require('../../github-request');
-
-var authGithubRequest = function(method, path) {
-  return githubRequest(method, path, auth.getAccessToken());
-};
 
 var App = React.createClass({
   mixins: [
@@ -60,8 +55,7 @@ var App = React.createClass({
         </bs.Navbar>
         <div className="container">
           <Router.RouteHandler
-           username={username}
-           githubRequest={authGithubRequest} />
+           username={username} />
         </div>
       </div>
     );
