@@ -256,7 +256,7 @@ var RepoLocale = React.createClass({
           </tbody>
         </table>
         {actions}
-        <Router.Link to="repo_home" params={params} className="btn btn-default">
+        <Router.Link to="repo_home" params={params} query={this.getQuery()} className="btn btn-default">
           <span className="glyphicon glyphicon-menu-left"/> Back
         </Router.Link>
       </div>
