@@ -5,11 +5,6 @@ var bs = require('react-bootstrap');
 
 var LocalizedMsg = require('./localized-msg.jsx');
 var auth = require('../auth');
-var githubRequest = require('../../github-request');
-
-var authGithubRequest = function(method, path) {
-  return githubRequest(method, path, auth.getAccessToken());
-};
 
 var App = React.createClass({
   mixins: [
@@ -24,10 +19,18 @@ var App = React.createClass({
   handleLogoutClick: function() {
     auth.logout();
     this.transitionTo('/');
-    this.forceUpdate();
   },
   handleLocaleChange: function(e) {
     this.props.onLocaleChange(e.target.value);
+  },
+  handleAuthChange: function() {
+    this.forceUpdate();
+  },
+  componentDidMount: function() {
+    auth.on('change', this.handleAuthChange);
+  },
+  componentWillUnmount: function() {
+    auth.removeListener('change', this.handleAuthChange);
   },
   render: function() {
     var username = auth.getUsername();
@@ -60,8 +63,7 @@ var App = React.createClass({
         </bs.Navbar>
         <div className="container">
           <Router.RouteHandler
-           username={username}
-           githubRequest={authGithubRequest} />
+           username={username} />
         </div>
       </div>
     );

@@ -3,6 +3,8 @@
 This is a very experimental app that attempts to make
 it easy to localize web apps and do L10n workflow through GitHub.
 
+Think [prose.io](http://prose.io/), but for localization.
+
 It currently assumes use of the [ICU Message][] syntax.
 
 ## Quick Start
