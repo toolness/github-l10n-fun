@@ -1,8 +1,21 @@
 var _ = require('underscore');
 var React = require('react/addons');
 var Router = require('react-router');
+var bs = require('react-bootstrap');
 
 var Github = require('../github');
+
+var CommitModal = React.createClass({
+  render: function() {
+    return (
+      <bs.Modal {...this.props} title="Commit Changes" bsStyle="primary">
+        <div className="modal-body">
+          <p>Sorry, this has not been implemented yet.</p>
+        </div>
+      </bs.Modal>
+    );
+  }
+});
 
 var RepoLocale = React.createClass({
   mixins: [Router.State],
@@ -69,9 +82,6 @@ var RepoLocale = React.createClass({
       editedMessages: _.extend({}, this.state.editedMessages, edits)
     });
   },
-  handleClickCommit: function(e) {
-    window.alert("Sorry, this hasn't been implemented yet.");
-  },
   canUserCommit: function() {
     var permissions = this.props.repoData.permissions;
     if (!permissions) return false;
@@ -92,7 +102,9 @@ var RepoLocale = React.createClass({
     if (isLoggedIn) {
       actions = (
         <div style={{paddingBottom: '1em'}}>
-          <button className="btn btn-primary" disabled={this.canUserCommit() && !messagesChanged} onClick={this.handleClickCommit}>Commit Changes</button>
+          <bs.ModalTrigger modal={<CommitModal />}>
+            <bs.Button bsStyle="primary" disabled={this.canUserCommit() && !messagesChanged}>Commit Changes&hellip;</bs.Button>
+          </bs.ModalTrigger>
         </div>
       );
     }
