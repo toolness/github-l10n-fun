@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var stableStringify = require('json-stable-stringify');
 var React = require('react/addons');
 var Router = require('react-router');
 var bs = require('react-bootstrap');
@@ -6,11 +7,52 @@ var bs = require('react-bootstrap');
 var Github = require('../github');
 
 var CommitModal = React.createClass({
+  getInitialState: function() {
+    return {
+      commitMessage: ''
+    };
+  },
+  handleChangeCommitMessage: function(e) {
+    this.setState({
+      commitMessage: e.target.value
+    });
+  },
+  getDefaultCommitMessage: function() {
+    return "Added/changed " + this.props.locale + " locale messages.";
+  },
+  handleSubmit: function(e) {
+    var commitMessage = this.state.commitMessage.trim() ||
+                        this.getDefaultCommitMessage();
+    var messages = stableStringify(
+      _.extend({}, this.props.messages, this.props.editedMessages),
+      { space: 2 }
+    );
+    e.preventDefault();
+    console.log("Commit message:", commitMessage);
+    console.log("Commit contents:", messages);
+    alert("Sorry, this hasn't been implemented yet.");
+  },
   render: function() {
+    var owner = this.props.owner;
+    var branch = this.props.branch;
+    var locale = this.props.locale;
+    var editedMessages = this.props.editedMessages;
+    var messageKeys = Object.keys(editedMessages);
+
     return (
       <bs.Modal {...this.props} title="Commit Changes" bsStyle="primary">
         <div className="modal-body">
-          <p>Sorry, this has not been implemented yet.</p>
+          <p>You are about to commit changes into <code>{owner}:{branch}</code> for the <strong>{locale}</strong> locale.</p>
+          <p>The following Message IDs will be changed:</p>
+          <ul>
+            {messageKeys.map(function(id) {
+              return <li key={id}><code>{id}</code></li>;
+            })}
+          </ul>
+          <form onSubmit={this.handleSubmit}>
+            <bs.Input type="text" placeholder={this.getDefaultCommitMessage()} label="Commit Message (optional)" value={this.state.commitMessage} onChange={this.handleChangeCommitMessage} />
+            <bs.Button bsStyle="primary" type="submit">Commit</bs.Button>
+          </form>
         </div>
       </bs.Modal>
     );
@@ -102,7 +144,13 @@ var RepoLocale = React.createClass({
     if (isLoggedIn) {
       actions = (
         <div style={{paddingBottom: '1em'}}>
-          <bs.ModalTrigger modal={<CommitModal />}>
+          <bs.ModalTrigger modal={React.createElement(CommitModal, {
+            owner: params.owner,
+            branch: this.props.branch,
+            messages: messages,
+            editedMessages: editedMessages,
+            locale: params.locale
+          })}>
             <bs.Button bsStyle="primary" disabled={this.canUserCommit() && !messagesChanged}>Commit Changes&hellip;</bs.Button>
           </bs.ModalTrigger>
         </div>
