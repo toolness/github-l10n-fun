@@ -9,7 +9,8 @@ var RepoLocale = React.createClass({
   getInitialState: function() {
     return {
       defaultMessages: {},
-      messages: {}
+      messages: {},
+      editedMessages: {}
     };
   },
   fetchLocale: function() {
@@ -58,11 +59,35 @@ var RepoLocale = React.createClass({
       this.fetchLocale();
     }
   },
+  handleChangeMessage: function(name, e) {
+    var edits = {};
+    edits[name] = e.target.value;
+    this.setState({
+      editedMessages: _.extend({}, this.state.editedMessages, edits)
+    });
+  },
+  handleClickCommit: function(e) {
+    window.alert("Sorry, this hasn't been implemented yet.");
+  },
   render: function() {
     var params = this.getParams();
     var defaultMessages = this.state.defaultMessages;
     var messages = this.state.messages;
+    var editedMessages = this.state.editedMessages;
     var isDefaultLocale = (params.locale === Github.DEFAULT_LOCALE);
+    var isLoggedIn = !!this.props.username;
+    var messagesChanged = Object.keys(editedMessages).some(function(name) {
+      return (editedMessages[name] !== messages[name]);
+    });
+    var actions = null;
+
+    if (isLoggedIn) {
+      actions = (
+        <div style={{paddingBottom: '1em'}}>
+          <button className="btn btn-primary" disabled={!messagesChanged} onClick={this.handleClickCommit}>Commit Changes</button>
+        </div>
+      );
+    }
 
     return (
       <div>
@@ -76,16 +101,26 @@ var RepoLocale = React.createClass({
           </thead>
           <tbody>
             {Object.keys(defaultMessages).map(function(name) {
+              var message = editedMessages[name] || messages[name] || '';
+              var widget;
+
+              if (isLoggedIn) {
+                widget = <input type="text" className="form-control" onChange={this.handleChangeMessage.bind(this, name)} value={message}/>;
+              } else {
+                widget = message;
+              }
+
               return (
                 <tr key={name}>
                   <td><code>{name}</code></td>
                   <td>{defaultMessages[name]}</td>
-                  {isDefaultLocale ? null : <td>{messages[name] || ''}</td>}
+                  {isDefaultLocale ? null : <td>{widget}</td>}
                 </tr>
               );
-            })}
+            }, this)}
           </tbody>
         </table>
+        {actions}
         <Router.Link to="repo_home" params={params} className="btn btn-default">
           <span className="glyphicon glyphicon-menu-left"/> Back
         </Router.Link>

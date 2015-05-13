@@ -105,6 +105,7 @@ var Repo = React.createClass({
     } else {
       content = (
         <Router.RouteHandler
+         username={this.props.username}
          branch={branch}
          handleGithubError={this.setError} />
       );
