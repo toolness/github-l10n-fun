@@ -10,6 +10,7 @@ var RepoLocale = React.createClass({
     return {
       defaultMessages: {},
       messages: {},
+      messagesSHA: null,
       editedMessages: {}
     };
   },
@@ -32,9 +33,10 @@ var RepoLocale = React.createClass({
 
       Github.fetchLocaleMessages(_.extend({
         locale: params.locale
-      }, options), function(err, messages) {
+      }, options), function(err, messages, sha) {
         if (!this.isMounted()) return;
         if (err) {
+          sha = null;
           if (err.status === 404) {
             messages = {};
           } else {
@@ -46,7 +48,8 @@ var RepoLocale = React.createClass({
         }
         this.setState({
           defaultMessages: defaultMessages,
-          messages: messages
+          messages: messages,
+          messagesSHA: sha
         });
       }.bind(this));
     }.bind(this));
