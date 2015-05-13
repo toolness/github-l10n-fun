@@ -9,7 +9,10 @@ var Github = require('../github');
 var CommitModal = React.createClass({
   getInitialState: function() {
     return {
-      commitMessage: ''
+      commitMessage: '',
+      isCommitting: false,
+      commitSuccessInfo: null,
+      commitError: null
     };
   },
   handleChangeCommitMessage: function(e) {
@@ -28,9 +31,45 @@ var CommitModal = React.createClass({
       { space: 2 }
     );
     e.preventDefault();
-    console.log("Commit message:", commitMessage);
-    console.log("Commit contents:", messages);
-    alert("Sorry, this hasn't been implemented yet.");
+    this.setState({
+      isCommitting: true,
+      commitError: null
+    });
+    Github.commitLocaleMessages({
+      owner: this.props.owner,
+      repo: this.props.repo,
+      message: commitMessage,
+      content: messages,
+      sha: this.props.messagesSHA,
+      locale: this.props.locale,
+      branch: this.props.branch
+    }, function(err, info) {
+      if (!this.isMounted()) return;
+      if (err) {
+        this.setState({
+          isCommitting: false,
+          commitError: err
+        });
+        console.log("ERROR", err);
+        return;
+      }
+      this.setState({
+        isCommitting: false,
+        commitSuccessInfo: info
+      });
+      this.props.onSuccess();
+    }.bind(this));
+  },
+  renderCommitSuccess: function() {
+    var info = this.state.commitSuccessInfo;
+    var url = info.commit.html_url;
+    var hash = info.commit.sha.slice(0, 10);
+
+    return (
+      <div>
+        <p>Commit <a href={url} target="_blank"><code>{hash}</code></a> successful!</p>
+      </div>
+    );
   },
   render: function() {
     var owner = this.props.owner;
@@ -38,10 +77,14 @@ var CommitModal = React.createClass({
     var locale = this.props.locale;
     var editedMessages = this.props.editedMessages;
     var messageKeys = Object.keys(editedMessages);
+    var isCommitting = this.state.isCommitting;
+    var content;
 
-    return (
-      <bs.Modal {...this.props} title="Commit Changes" bsStyle="primary">
-        <div className="modal-body">
+    if (this.state.commitSuccessInfo) {
+      content = this.renderCommitSuccess();
+    } else {
+      content = (
+        <div>
           <p>You are about to commit changes into <code>{owner}:{branch}</code> for the <strong>{locale}</strong> locale.</p>
           <p>The following Message IDs will be changed:</p>
           <ul>
@@ -49,11 +92,29 @@ var CommitModal = React.createClass({
               return <li key={id}><code>{id}</code></li>;
             })}
           </ul>
+          {this.state.commitError
+           ? <div className="alert alert-danger">
+               Alas, an error occurred while committing. Please try again later.
+             </div>
+           : null}
           <form onSubmit={this.handleSubmit}>
-            <bs.Input type="text" placeholder={this.getDefaultCommitMessage()} label="Commit Message (optional)" value={this.state.commitMessage} onChange={this.handleChangeCommitMessage} />
-            <bs.Button bsStyle="primary" type="submit">Commit</bs.Button>
+            <bs.Input type="text"
+             placeholder={this.getDefaultCommitMessage()}
+             label="Commit Message (optional)"
+             value={this.state.commitMessage}
+             onChange={this.handleChangeCommitMessage}
+             disabled={isCommitting} />
+            <bs.Button bsStyle="primary" type="submit" disabled={isCommitting}>
+              {isCommitting ? "Committing..." : "Commit"}
+            </bs.Button>
           </form>
         </div>
+      );
+    }
+
+    return (
+      <bs.Modal {...this.props} title="Commit Changes" bsStyle="primary">
+        <div className="modal-body">{content}</div>
       </bs.Modal>
     );
   }
@@ -124,6 +185,9 @@ var RepoLocale = React.createClass({
       editedMessages: _.extend({}, this.state.editedMessages, edits)
     });
   },
+  handleCommitSuccess: function() {
+    this.fetchLocale();
+  },
   canUserCommit: function() {
     var permissions = this.props.repoData.permissions;
     if (!permissions) return false;
@@ -145,10 +209,13 @@ var RepoLocale = React.createClass({
       actions = (
         <div style={{paddingBottom: '1em'}}>
           <bs.ModalTrigger modal={React.createElement(CommitModal, {
+            onSuccess: this.handleCommitSuccess,
             owner: params.owner,
+            repo: params.repo,
             branch: this.props.branch,
             messages: messages,
             editedMessages: editedMessages,
+            messagesSHA: this.state.messagesSHA,
             locale: params.locale
           })}>
             <bs.Button bsStyle="primary" disabled={this.canUserCommit() && !messagesChanged}>Commit Changes&hellip;</bs.Button>
