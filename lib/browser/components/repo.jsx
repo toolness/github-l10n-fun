@@ -46,6 +46,7 @@ var Repo = React.createClass({
     return {
       error: null,
       defaultBranch: '',
+      repoData: null,
       branches: []
     };
   },
@@ -65,10 +66,12 @@ var Repo = React.createClass({
       if (!this.isMounted()) return;
       if (err)
         return this.setError('Unable to fetch repository metadata.', err);
+      var defaultBranch = info.repo.default_branch;
       this.setState({
         branches: info.branches,
-        defaultBranch: info.defaultBranch,
-        branch: this.state.branch || info.defaultBranch
+        defaultBranch: defaultBranch,
+        repoData: info.repo,
+        branch: this.state.branch || defaultBranch
       });
     }.bind(this));
   },
@@ -88,7 +91,7 @@ var Repo = React.createClass({
     var params = this.getParams();
     var query = this.getQuery();
     var branch = query.branch || this.state.defaultBranch;
-    var isLoading = (this.state.defaultBranch === '');
+    var isLoading = (this.state.repoData === null);
     var content;
 
     if (this.state.branches.indexOf(branch) == -1)
@@ -107,6 +110,7 @@ var Repo = React.createClass({
         <Router.RouteHandler
          username={this.props.username}
          branch={branch}
+         repoData={this.state.repoData}
          handleGithubError={this.setError} />
       );
     }

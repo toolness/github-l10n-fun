@@ -69,6 +69,11 @@ var RepoLocale = React.createClass({
   handleClickCommit: function(e) {
     window.alert("Sorry, this hasn't been implemented yet.");
   },
+  canUserCommit: function() {
+    var permissions = this.props.repoData.permissions;
+    if (!permissions) return false;
+    return permissions.push;
+  },
   render: function() {
     var params = this.getParams();
     var defaultMessages = this.state.defaultMessages;
@@ -84,7 +89,7 @@ var RepoLocale = React.createClass({
     if (isLoggedIn) {
       actions = (
         <div style={{paddingBottom: '1em'}}>
-          <button className="btn btn-primary" disabled={!messagesChanged} onClick={this.handleClickCommit}>Commit Changes</button>
+          <button className="btn btn-primary" disabled={this.canUserCommit() && !messagesChanged} onClick={this.handleClickCommit}>Commit Changes</button>
         </div>
       );
     }
